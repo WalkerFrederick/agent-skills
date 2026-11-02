@@ -23,6 +23,10 @@ Since this repo is public:
 
 - **Pre-commit** — gitleaks scans staged changes (fail-open if gitleaks isn't installed).
 - **Push protection + secret scanning** — GitHub-side, blocks known secret patterns.
-- **CI** (`.github/workflows/security-check.yml`) — gitleaks plus an LLM
-  sensitivity check on PRs, re-run post-merge on `main`, plus a weekly
-  full-history scan.
+- **CI** (`.github/workflows/security-check.yml`):
+  - **gitleaks** (blocking) — required check on PRs, re-run post-merge on
+    `main`, weekly full-history scan.
+  - **LLM sensitivity review** (advisory) — reviews each diff for contextual
+    leaks (passwords in prose, private info) that regex misses; comments on
+    PRs or opens an issue when it flags something. Never blocks — human
+    judgment decides.
