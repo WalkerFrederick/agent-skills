@@ -1,0 +1,4 @@
+# demo config for testing the advisory LLM review
+SMTP_HOST = mail.internal.example
+SMTP_USER = walker
+SMTP_PASS = Tr0ub4dor&3
