@@ -87,6 +87,12 @@ jobs:
             exit 1
           fi
 
+          echo "--- response head ---"
+          wc -c < response.json || true
+          head -c 300 response.json || true
+          echo
+          echo "--- end response head ---"
+
           CONTENT=$(jq -r '.choices[0].message.content // empty' response.json)
           if [ -z "$CONTENT" ]; then
             echo "::error::Empty response from model: $(cat response.json)"
