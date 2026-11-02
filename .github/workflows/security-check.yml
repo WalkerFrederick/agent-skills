@@ -74,18 +74,22 @@ jobs:
               messages: [{role: "user", content: ($p + "\n" + $d + "\n</diff>")}],
               max_tokens: 500}')
 
-          if ! RESPONSE=$(curl -sS --max-time 60 \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "$PAYLOAD" \
-              https://models.github.ai/inference/chat/completions); then
+          HTTP_CODE=$(curl -sS -L --max-time 60 -o response.json -w '%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            https://models.github.ai/inference/chat/completions) || {
             echo "::error::GitHub Models request failed"
+            exit 1
+          }
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::GitHub Models returned HTTP $HTTP_CODE: $(cat response.json)"
             exit 1
           fi
 
-          CONTENT=$(printf '%s' "$RESPONSE" | jq -r '.choices[0].message.content // empty')
+          CONTENT=$(jq -r '.choices[0].message.content // empty' response.json)
           if [ -z "$CONTENT" ]; then
-            echo "::error::Empty response from model: $RESPONSE"
+            echo "::error::Empty response from model: $(cat response.json)"
             exit 1
           fi
 
