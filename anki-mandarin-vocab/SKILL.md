@@ -34,6 +34,10 @@ Rules:
 - Skip grammar patterns (like "上星期 + (一, 二, 三...)") unless explicitly requested — not single vocab items.
 - Show the user the parsed word list (hanzi/pinyin/meaning) and get confirmation **before** inserting when the input was ambiguous, more than ~20 words, or any meaning had to be guessed. Clean and complete input: proceed without asking.
 
+## Related: the user's Obsidian vocab list
+
+The user also keeps a growing vocab note at `中文/my pinyin vocab list.md` in the Obsidian vault (`~/Documents/ObsidianSync`). When asked to "format a dump" into it (rather than add to Anki): entry format is `**hanzi** — pinyin — meaning` (bold hanzi, tone-marked pinyin, em-dash separators), one section per dump under a `# New Words M-D` heading, grammar patterns as `Grammar note: **pattern** — pinyin — gloss` lines rather than entries, simplified hanzi, and a `## Quick Links` block at the top of the file listing every section link (`[[#New Words M-D]]`) — read the file first and match its existing conventions, and add the new section's link to Quick Links. Anki and Obsidian are separate requests: never add to Anki when the ask is to format the note.
+
 ## Example Sentences (both paths)
 
 Every note gets one example sentence (fields 10-12). Requirements:
@@ -87,14 +91,14 @@ Add to a single deck first (cards split next step). Model must be exactly `Manda
 A new note's two cards (template ord 0 and ord 1) both land in the deck used at add time. Split them:
 
 1. For each new note ID: `{"action": "findCards", "params": {"query": "nid:<note_id>"}}` → two card IDs.
-2. `{"action": "cardsInfo", "params": {"cards": [<ids>]}}` → inspect each card's question/front: the card whose question shows the **pinyin** (asking for English) is template ord 0 → `Mandarin::Pinyin → English`; the card asking you to produce **pinyin** from English is ord 1 → `Mandarin::English → Pinyin`.
+2. `{"action": "cardsInfo", "params": {"cards": [<ids>]}}` → inspect each card's question/front: the card whose question shows the **pinyin** (asking for English) is template ord 0 → `Mandarin::Pinyin → English`; the card asking you to produce **pinyin** from English is ord 1 → `Mandarin::English → Pinyin`. Programmatic test: the ord 0 card's question contains tone-marked vowels (ā á ǎ à é ě è ǐ ó ǒ ò ǔ ǚ …), the ord 1 question is plain English — sort on that instead of eyeballing screenshots.
 3. Move each card: `{"action": "changeDeck", "params": {"cards": [<card_id>], "deck": "Mandarin::Pinyin → English"}}` (and the other to `Mandarin::English → Pinyin`).
 
 `changeDeck` modifies card scheduling state — per this skill's standing authorization this card-to-deck move is part of the add workflow the user asked for; still, batch all card moves under the one confirmation already given for the add.
 
 ### 5. Verify and report
 
-- Verify: `deckNames` + per-deck counts via `findCards` (`"deck:Mandarin::Pinyin → English is:new added:<today>"`) — both decks should gain the same number of new cards.
+- Verify: `deckNames` + per-deck counts via `findCards` (`'deck:"Mandarin::Pinyin → English" tag:added::<today> is:new'`) — both decks should gain the same number of new cards. Do NOT write `added:<date>` in a search: `added:` expects a whole number of days, so `added:2026-11-02` throws "expected a positive whole number" — filter by `tag:added::<date>` instead.
 - Report: notes added, duplicates skipped, the example sentences used (so the user can sanity-check them), and suggest running Anki sync (you can offer `{"action": "sync"}` — but never call `sync` without asking, it contacts AnkiWeb).
 - If anything failed mid-run, the affected notes can be removed precisely by note ID (`deleteNotes` — confirm with the user first) — no backup/restore needed on this path.
 
